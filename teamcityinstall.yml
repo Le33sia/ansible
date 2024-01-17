@@ -29,15 +29,31 @@
       tags:
         - teamcity
 
-#    - name: Set Permissions
- #     become: true
-  #    ansible.builtin.file:
-   #     path: "/home/lesia/TeamCity"
-    #    owner: lesia
-     #   group: lesia
-      #  recurse: yes
-     # tags:
-      #  - teamcity
+    - name: Set Permissions
+      become: true
+      ansible.builtin.file:
+        path: "/home/lesia/TeamCity"
+        owner: lesia
+        group: lesia
+        recurse: yes
+      tags:
+        - teamcity
+
+    - name: Set Write Permissions for TeamCity logs directory
+      become: true
+      ansible.builtin.file:
+        path: "/home/lesia/TeamCity/logs"
+        owner: lesia
+        group: lesia
+        mode: "u+rwx"
+        recurse: yes
+      tags:
+        - teamcity
+
+
+
+
+
 
     - name: Start TeamCity
       become: true
