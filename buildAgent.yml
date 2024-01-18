@@ -1,0 +1,32 @@
+---
+- name: Install TeamCity Agent
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Install Java and unzip
+      become: true
+      dnf:
+        name: 
+          - java-11-openjdk
+          - unzip
+        state: present
+      tags:
+        - java
+        - unzip
+
+    - name: Download TeamCity Agent
+      become: true
+      become_user: git
+      ansible.builtin.shell:
+        cmd: "wget http://192.168.0.112:8111/update/buildAgent.zip -P /home/git/"
+      tags:
+        - teamcity-agent
+
+    - name: Extract TeamCity Agent
+      become: true
+      become_user: git
+      ansible.builtin.shell:
+        cmd: "unzip /home/git/buildAgent.zip -d /home/git/"
+      tags:
+        - teamcity-agent

@@ -1,0 +1,66 @@
+---
+- name: Provision TeamCity
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Install Java
+      become: true
+      dnf:
+        name: java-11-openjdk
+        state: present
+      tags:
+        - java
+
+    - name: Download TeamCity
+      become: true
+      become_user: lesia
+      get_url:
+        url: "https://download-cdn.jetbrains.com/teamcity/TeamCity-2023.05.4.tar.gz"
+        dest: "/home/lesia/"
+      tags:
+        - teamcity
+
+    - name: Extract TeamCity
+      become: true
+      become_user: lesia
+      ansible.builtin.unarchive:
+        src: "/home/lesia/TeamCity-2023.05.4.tar.gz"
+        dest: "/home/lesia/"
+        remote_src: true
+      tags:
+        - teamcity
+
+    - name: Set Permissions
+      become: true
+      ansible.builtin.file:
+        path: "/home/lesia/TeamCity"
+        owner: lesia
+        group: lesia
+        recurse: yes
+      tags:
+        - teamcity
+
+    - name: Set Write Permissions for TeamCity logs directory
+      become: true
+      ansible.builtin.file:
+        path: "/home/lesia/TeamCity/logs"
+        owner: lesia
+        group: lesia
+        mode: 0775
+        recurse: yes
+      tags:
+        - teamcity
+
+
+
+
+
+
+    - name: Start TeamCity
+      become: true
+      become_user: lesia
+      ansible.builtin.shell:
+        cmd: "/home/lesia/TeamCity/bin/runAll.sh start"
+      tags:
+        - teamcity
