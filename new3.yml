@@ -1,0 +1,52 @@
+---
+- name: Configure Nginx with SSL
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Nginx
+      dnf:
+        name: nginx
+        state: present
+
+    - name: Enable Nginx service
+      systemd:
+        name: nginx
+        enabled: yes
+
+    - name: Start Nginx service
+      systemd:
+        name: nginx
+        state: started
+    
+    - name: Create private key directory
+      ansible.builtin.file:
+        path: /etc/ssl/private
+        state: directory
+        mode: '0777'
+
+    - name: Create /etc/ssl/certs directory
+      ansible.builtin.file:
+        path: /etc/ssl/certs
+        state: directory
+        mode: '0777'
+
+    - name: OpenSSl
+      command: "openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj '/C=US/ST=State/L=City/O=Organization/CN=192.168.0.115'"
+        
+   
+    - name: Generate DH parameter file
+      command: "openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048"
+
+
+    - name: Copy SSL configuration template to remote machine
+      copy:
+        src: ssl.conf.j2
+        dest: /etc/nginx/conf.d/ssl.conf
+        mode: 0644
+
+    - name: Apply SSL configuration template
+      template:
+        src: /etc/nginx/conf.d/ssl.conf
+        dest: /etc/nginx/conf.d/ssl.conf
+      notify:
+        - Reload Nginx
