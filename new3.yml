@@ -44,9 +44,4 @@
         dest: /etc/nginx/conf.d/ssl.conf
         mode: 0644
 
-    - name: Apply SSL configuration template
-      template:
-        src: /etc/nginx/conf.d/ssl.conf
-        dest: /etc/nginx/conf.d/ssl.conf
-      notify:
-        - Reload Nginx
+   
