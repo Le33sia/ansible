@@ -7,7 +7,7 @@
      # command: parted /dev/sda mkpart primary ext4 0% 100%
       command: "{{ item }}"
       loop:
-	      - parted /dev/sda mklabel msdos  # Create a new MBR partition table
+	- parted /dev/sda mklabel msdos  # Create a new MBR partition table
         - parted /dev/sda mkpart primary ext4 0% 100%
         - partprobe /dev/sda  # Inform the kernel of partition changes
 
