@@ -1,0 +1,46 @@
+
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Create a new partition on the disk
+     # command: parted /dev/sda mkpart primary ext4 0% 100%
+      command: "{{ item }}"
+      loop:
+	      - parted /dev/sda mklabel msdos  # Create a new MBR partition table
+        - parted /dev/sda mkpart primary ext4 0% 100%
+        - partprobe /dev/sda  # Inform the kernel of partition changes
+
+    - name: Create a physical volume (PV)
+      command: pvcreate /dev/sda1
+
+    - name: Create a volume group (VG)
+      command: vgcreate myvg /dev/sda1
+
+    - name: Create a logical volume (LV)
+      community.general.lvol:
+        lv: mylv
+        vg: myvg
+        size: 10G
+
+    - name: Format the logical volume as ext4
+      community.general.filesystem:
+        fstype: ext4
+        dev: /dev/myvg/mylv
+
+    - name: Create a mount point
+      ansible.builtin.file:
+        path: /mnt/newvar
+        state: directory
+
+    - name: Mount the logical volume
+      command: mount -t ext4 /dev/myvg/mylv /mnt/newvar
+
+    - name: Copy data from /var to the new logical volume
+      command: cp -a /var/. /mnt/newvar
+
+    - name: Update /etc/fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        line: "/dev/myvg/mylv    /var    ext4    defaults    0 0"
+
