@@ -39,7 +39,7 @@ def main():
     # Load default values from config file
     config = load_config()
     api_key = args.api_key or config.get('api_key') or get_api_key()
-    city = args.city or config.get('default_city', 'London')
+    city = args.city or config.get('default_city')
 
     weather_data = get_weather(api_key, city)
 
