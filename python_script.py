@@ -1,6 +1,7 @@
-
 import requests
 import argparse
+import configparser
+from getpass import getpass
 
 def get_weather(api_key, city):
     api_url = "http://api.weatherstack.com/current"
@@ -8,24 +9,37 @@ def get_weather(api_key, city):
 
     response = requests.get(api_url, params=params)
 
-    if response.status_code == 200:
-        data = response.json()
-        return data
-    else:
-	return None
+    return response.json() if response.status_code == 200 else None
 
-def main():
-    parser = argparse.ArgumentParser(description='Get weather information from Weathe>
-    
-    # Optional command-line arguments
+def load_config():
+    config = configparser.ConfigParser()
+    try:
+        config.read('config.ini')
+        return config['WeatherConfig']
+    except configparser.Error:
+        print("Error reading config file. Using default values.")
+        return {}
+
+def get_api_key():
+    # Prompt user for API key securely
+    api_key = getpass("Enter Weatherstack API key: ")
+    return api_key
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='Get weather information from Weatherstack API')
+
     parser.add_argument('--api-key', help='Weatherstack API key')
     parser.add_argument('--city', help='City name for weather information')
 
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    # Set default values or read from command-line arguments
-    api_key = '891e8c047d792a1f405de9baf6cb6ef4'  # Replace with your actual Weathers>
-    city = args.city  # Default city is London
+def main():
+    args = parse_arguments()
+
+    # Load default values from config file
+    config = load_config()
+    api_key = args.api_key or config.get('api_key') or get_api_key()
+    city = args.city or config.get('default_city', 'London')
 
     weather_data = get_weather(api_key, city)
 
@@ -38,8 +52,7 @@ def main():
             print(f"Unexpected response format. KeyError: {e}")
             print("Full response:", weather_data)
     else:
-	print("API Call Failed. Full response:", weather_data)
+        print("API Call Failed. Full response:", weather_data)
 
 if __name__ == "__main__":
     main()
-
